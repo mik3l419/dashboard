@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GCTU Student Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Welcome/Password Section -->
+        <div id="welcome-section" class="welcome-section">
+            <div class="welcome-card">
+                <h1>Welcome to GCTU Student Dashboard</h1>
+                <p>Please enter the access password to continue</p>
+                <input type="password" id="access-password" placeholder="Enter password">
+                <button id="access-btn">Access Dashboard</button>
+                <div id="error-message" class="error-message" style="display: none;"></div>
+                <div class="developer-credit">
+                    <p><small>Developed by <strong>MiKe©</strong> - Networking Student. System still under maintenance⚙️🛠️</small></p>
+                    <p><small>Created to streamline resources for all students</small></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Dashboard Section -->
+        <div id="main-section" style="display: none;">
+            <header>
+                <h1>GCTU Student Dashboard</h1>
+                <div class="auth-section">
+                    <button id="logout-btn">Logout</button>
+                </div>
+            </header>
+
+            <!-- Navigation Tabs -->
+            <nav class="tab-navigation">
+                <button class="tab-btn active" data-tab="home">Home</button>
+                <button class="tab-btn" data-tab="past-questions">Past Questions</button>
+                <button class="tab-btn" data-tab="site2">Site 2</button>
+            </nav>
+
+            <!-- Tab Content -->
+            <main id="main-content">
+                <!-- Home Tab -->
+                <div id="home-tab" class="tab-content active">
+                    <section class="dashboard-home">
+                        <h2>Welcome to Your Dashboard</h2>
+                        <div class="dashboard-cards">
+                            <div class="dashboard-card">
+                                <h3>📑 Q-Vault</h3>
+                                <p>Access and upload past examination questions for various courses</p>
+                                <button class="card-btn" onclick="switchTab('past-questions')">Access Past Questions</button>
+                            </div>
+                            <div class="dashboard-card">
+                                <h3>📚 Slide Vault</h3>
+                                <p>Access shared slides (only Networking students)</p>
+                                <button class="card-btn" onclick="switchTab('site2')">Access Slides</button>
+                            </div>
+                        </div>
+                        <div class="dashboard-info">
+                            <h3>About This Dashboard</h3>
+                            <p>This dashboard provides access to various student resources and tools designed to help GCTU students succeed in their academic journey.</p>
+                            <ul>
+                                <li>Access past examination questions</li>
+                                <li>Access lecture slides</li>
+                                <li>Streamlined interface for easy navigation</li>
+                            </ul>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Past Questions Tab -->
+                <div id="past-questions-tab" class="tab-content">
+                    <section class="upload-section" id="upload-section">
+                        <h2>Upload New Past Question</h2>
+                        <input type="text" id="question-code" placeholder="Course Code">
+                        <input type="text" id="question-description" placeholder="Course Name">
+                        <input type="file" id="question-file" accept="image/*,application/pdf">
+                        <button id="upload-btn">Upload Past Question</button>
+                    </section>
+                    
+                    <section class="questions-section">
+                        <h2>Past Questions</h2>
+                        <div class="filter-controls">
+                            <input type="text" id="search-input" placeholder="Search by course code or name...">
+                        </div>
+                        <div id="questions-container"></div>
+                    </section>
+                </div>
+
+                <!-- Site 2 Tab -->
+                <div id="site2-tab" class="tab-content">
+                    <section class="coming-soon">
+                        <h2>Site 2</h2>
+                        <p>This section is ready for your next site. You can paste the code here when ready.</p>
+                        <div class="placeholder-content">
+                            <h3>Coming Soon</h3>
+                            <p>Additional student resources will be available here.</p>
+                        </div>
+                    </section>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+<div id
+</body>
+</html>
