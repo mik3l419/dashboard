@@ -25,8 +25,7 @@ const tabContents = document.querySelectorAll('.tab-content');
 // Authentication state
 let isAuthenticated = false;
 let isAdmin = false;
-let questions = []; // Store questions in memory for demo
-let filteredQuestions = []; // Store filtered questions
+let questions = []; // Store questions in memory
 
 // Event listeners
 accessBtn.addEventListener('click', handleAccess);
@@ -53,22 +52,7 @@ accessPasswordInput.addEventListener('keypress', (e) => {
 init();
 
 function init() {
-    // Check if user was previously authenticated (using localStorage)
-    const wasAuthenticated = localStorage.getItem('authenticated') === 'true';
-    const wasAdmin = localStorage.getItem('isAdmin') === 'true';
-    
-    if (wasAuthenticated) {
-        isAuthenticated = true;
-        if (wasAdmin) {
-            isAdmin = true;
-        }
-        showMainSection();
-    } else {
-        showWelcomeSection();
-    }
-
-    // Load demo questions
-    loadDemoQuestions();
+    showWelcomeSection(); // Start by showing the welcome screen
 }
 
 function handleAccess() {
@@ -76,14 +60,11 @@ function handleAccess() {
 
     if (enteredPassword === ACCESS_PASSWORD) {
         isAuthenticated = true;
-        localStorage.setItem('authenticated', 'true');
         showMainSection();
         errorMessage.style.display = 'none';
     } else if (enteredPassword === ADMIN_PASSWORD) {
         isAuthenticated = true;
         isAdmin = true;
-        localStorage.setItem('authenticated', 'true');
-        localStorage.setItem('isAdmin', 'true');
         showMainSection();
         errorMessage.style.display = 'none';
     } else {
@@ -94,11 +75,11 @@ function handleAccess() {
     }
 }
 
+
+
 function handleLogout() {
     isAuthenticated = false;
     isAdmin = false;
-    localStorage.removeItem('authenticated');
-    localStorage.removeItem('isAdmin');
     showWelcomeSection();
     accessPasswordInput.value = '';
 }
@@ -119,15 +100,15 @@ function switchTab(tabName) {
     // Remove active class from all tabs and contents
     tabBtns.forEach(btn => btn.classList.remove('active'));
     tabContents.forEach(content => content.classList.remove('active'));
-    
+
     // Add active class to selected tab and content
     const selectedTab = document.querySelector(`[data-tab="${tabName}"]`);
     const selectedContent = document.getElementById(`${tabName}-tab`);
-    
+
     if (selectedTab && selectedContent) {
         selectedTab.classList.add('active');
         selectedContent.classList.add('active');
-        
+
         // If switching to past questions tab, check admin access and load questions
         if (tabName === 'past-questions') {
             checkAdminAccess();
@@ -146,8 +127,6 @@ function checkAdminAccess() {
 }
 
 async function handleUpload() {
-    
-
     if (!isAdmin) {
         alert('Admin access required to upload questions');
         return;
@@ -168,78 +147,81 @@ async function handleUpload() {
 
         // Convert file to base64 for proper storage
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = async function(e) {
             const fileUrl = e.target.result;
 
-            // Create new question object
+
             const newQuestion = {
-                id: Date.now(), // Simple ID generation
                 title: courseCode,
                 description: description || 'No course name',
                 file_url: fileUrl,
                 file_name: file.name,
-                created_at: new Date().toISOString()
+                created_at: new Date().toISOString(),
+                
             };
 
-            // Add to questions array
-            questions.unshift(newQuestion);
+            const { data, error } = await supabaseClient
+                .from('slides')
+                .insert([newQuestion]);
 
-            // Save to localStorage for persistence
-            localStorage.setItem('questions', JSON.stringify(questions));
-
-            // Clear form
-            questionDescriptionInput.value = '';
-            questionCodeInput.value = '';
-            questionFileInput.value = '';
-
-            alert('Past question uploaded successfully!');
-            loadQuestions();
-
-            uploadBtn.textContent = 'Upload Past Question';
-            uploadBtn.disabled = false;
-        };
+            if (error) {
+                console.error('Insert error:', error);
+                alert('Error uploading question: ' + error.message);
+            } else {
+                alert('Past question uploaded successfully!');
+                loadQuestions();
+            }
         
-        reader.readAsDataURL(file);
 
-        } catch (error) {
-        alert('Error uploading question: ' + error.message);
+
+        // Clear form
+        questionDescriptionInput.value = '';
+        questionCodeInput.value = '';
+        questionFileInput.value = '';
+
         uploadBtn.textContent = 'Upload Past Question';
         uploadBtn.disabled = false;
+    };
+
+    reader.readAsDataURL(file);
+
+} catch (error) {
+    alert('Error uploading question: ' + error.message);
+    uploadBtn.textContent = 'Upload Past Question';
+    uploadBtn.disabled = false;
+}
+}
+
+async function loadQuestions() {
+    try {
+        // ✅ Make sure this is the client you created earlier
+        const { data, error } = await window.supabaseClient
+            .from('slides')                         // ✅ your table
+            .select('*')                            // ✅ get all rows
+            .order('created_at', { ascending: false }); // ✅ order newest first
+
+        if (error) {
+            throw error; // re-throw to be caught below
+        }
+
+        console.log("Slides data:", data);
+
+        // ✅ Use correct variable name here
+        const slides = data;
+
+        // ✅ Now render them — replace with your actual render function
+        displayQuestions(slides);
+
+    } catch (error) {
+        console.error('Error fetching slides:', error);
+        alert('Error fetching slides: ' + error.message);
     }
 }
 
-function loadDemoQuestions() {
-    // Load questions from localStorage if available
-    const savedQuestions = localStorage.getItem('questions');
-    if (savedQuestions) {
-        questions = JSON.parse(savedQuestions);
-    } else {
-        // Initialize with empty questions array
-        questions = [];
-        localStorage.setItem('questions', JSON.stringify(questions));
-    }
-}
-
-function loadQuestions() {
-    if (!isAuthenticated) return;
-
-    filteredQuestions = questions;
-    displayQuestions(filteredQuestions);
-}
 
 function handleSearch() {
     const searchTerm = searchInput.value.toLowerCase().trim();
-    
-    if (searchTerm === '') {
-        filteredQuestions = questions;
-    } else {
-        filteredQuestions = questions.filter(question => 
-            question.title.toLowerCase().includes(searchTerm) ||
-            question.description.toLowerCase().includes(searchTerm)
-        );
-    }
-    
-    displayQuestions(filteredQuestions);
+    // Include searching functionality based on fetched questions from Supabase
 }
 
 function displayQuestions(questionsList) {
@@ -250,10 +232,10 @@ function displayQuestions(questionsList) {
 
     questionsContainer.innerHTML = questionsList.map(question => `
         <div class="question-card">
-            ${isImageFile(question.file_name) ? 
-                `<img src="${question.file_url}" alt="${question.title}" class="question-image" onerror="this.style.display='none'">` : 
-                '<div class="question-placeholder">📄 ' + escapeHtml(question.file_name) + '</div>'
-            }
+            ${isImageFile(question.file_name) ?
+            `<img src="${question.file_url}" alt="${question.title}" class="question-image" onerror="this.style.display='none'">` :
+            '<div class="question-placeholder">📄 ' + escapeHtml(question.file_name) + '</div>'
+        }
             <h3>${escapeHtml(question.title)}</h3>
             <p><strong>Course:</strong> ${escapeHtml(question.description)}</p>
             <p><small>Uploaded: ${new Date(question.created_at).toLocaleDateString()}</small></p>
@@ -297,14 +279,7 @@ function deleteQuestion(questionId) {
     }
 
     try {
-        // Remove from questions array
-        questions = questions.filter(q => q.id !== questionId);
-
-        // Update localStorage
-        localStorage.setItem('questions', JSON.stringify(questions));
-
-        alert('Past question deleted successfully!');
-        loadQuestions();
+        // Logic to delete question from Supabase goes here
     } catch (error) {
         alert('Error deleting past question: ' + error.message);
     }
