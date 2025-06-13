@@ -208,9 +208,13 @@ async function loadQuestions() {
 
         // ✅ Use correct variable name here
         const slides = data;
-
+   
         // ✅ Now render them — replace with your actual render function
         displayQuestions(slides);
+
+        questions = data; // Store full list in memory
+displayQuestions(questions); // Initial render
+
 
     } catch (error) {
         console.error('Error fetching slides:', error);
@@ -221,7 +225,14 @@ async function loadQuestions() {
 
 function handleSearch() {
     const searchTerm = searchInput.value.toLowerCase().trim();
-    // Include searching functionality based on fetched questions from Supabase
+    const filtered = questions.filter(q => {
+        return (
+            q.title.toLowerCase().includes(searchTerm) ||
+            q.description.toLowerCase().includes(searchTerm) ||
+            q.file_name.toLowerCase().includes(searchTerm)
+        );
+    });
+    displayQuestions(filtered);
 }
 
 function displayQuestions(questionsList) {
