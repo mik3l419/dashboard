@@ -1,12 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MK-Vault🛅</title>
+    <title>MK-Vault</title>
+   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.js"></script>
+
+
     <link rel="stylesheet" href="style.css">
+   
 </head>
+
 <body>
+    <!-- Then use Supabase normally -->
+    <script>
+        const supabaseUrl = 'https://sjttobzknnoaawyjrdmy.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNqdHRvYnprbm5vYWF3eWpyZG15Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk2NDIzMjgsImV4cCI6MjA2NTIxODMyOH0.5yJtiEg5a9EKyHthpJ9FgU-sU6cn06KL2xJzviF187U';
+        window.supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+        (async () => {
+            // ✅ Use the client — not the global 'supabase' directly
+            const {data, error} = await supabaseClient.from('slides').select('*');
+
+            if (error) {
+                console.error("Error fetching slides:", error);
+            } else {
+                console.log("Slides data:", data);
+            }
+        })();
+    </script>
     <div class="container">
         <!-- Welcome/Password Section -->
         <div id="welcome-section" class="welcome-section">
@@ -17,7 +39,8 @@
                 <button id="access-btn">Access Dashboard</button>
                 <div id="error-message" class="error-message" style="display: none;"></div>
                 <div class="developer-credit">
-                    <p><small>Developed by <strong>©MiKe</strong> - Networking Student. System under development ⚙️🛠️</small></p>
+                    <p><small>Developed by <strong>©MiKe</strong> - Networking Student. System under development
+                            ⚙️🛠️</small></p>
                     <p><small>Created to streamline resources for all students</small></p>
                 </div>
             </div>
@@ -26,7 +49,7 @@
         <!-- Main Dashboard Section -->
         <div id="main-section" style="display: none;">
             <header>
-                <h1>MK-Vault🛅</h1>
+                <h1>MK-Vault</h1>
                 <div class="auth-section">
                     <button id="logout-btn">Logout</button>
                 </div>
@@ -49,7 +72,8 @@
                             <div class="dashboard-card">
                                 <h3>📑 Q-Vault</h3>
                                 <p>Access past examination questions for various courses</p>
-                                <button class="card-btn" onclick="switchTab('past-questions')">Access Past Questions</button>
+                                <button class="card-btn" onclick="switchTab('past-questions')">Access Past
+                                    Questions</button>
                             </div>
                             <div class="dashboard-card">
                                 <h3>📚 Slide Vault</h3>
@@ -59,7 +83,8 @@
                         </div>
                         <div class="dashboard-info">
                             <h3>About This Dashboard</h3>
-                            <p>This dashboard provides access to various student resources and tools designed to help GCTU students succeed in their academic journey.</p>
+                            <p>This dashboard provides access to various student resources and tools designed to help
+                                GCTU students succeed in their academic journey.</p>
                             <ul>
                                 <li>Access past examination questions</li>
                                 <li>Access lecture slides</li>
@@ -79,7 +104,7 @@
                         <input type="file" id="question-file" accept="image/*,application/pdf">
                         <button id="upload-btn">Upload Past Question</button>
                     </section>
-                    
+
                     <section class="questions-section">
                         <h2>Past Questions</h2>
                         <div class="filter-controls">
@@ -93,7 +118,7 @@
                 <div id="site2-tab" class="tab-content">
                     <section class="coming-soon">
                         <h2>Site 2</h2>
-                        
+
                         <div class="placeholder-content">
                             <h3>Coming Soon</h3>
                             <p>Additional student resources will be available here.</p>
@@ -105,6 +130,6 @@
     </div>
 
     <script src="script.js"></script>
-<div id
-</body>
+    <div id </body>
+
 </html>
