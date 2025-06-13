@@ -55,7 +55,13 @@ init();
 function init() {
     // Check if user was previously authenticated (using localStorage)
     const wasAuthenticated = localStorage.getItem('authenticated') === 'true';
+    const wasAdmin = localStorage.getItem('isAdmin') === 'true';
+    
     if (wasAuthenticated) {
+        isAuthenticated = true;
+        if (wasAdmin) {
+            isAdmin = true;
+        }
         showMainSection();
     } else {
         showWelcomeSection();
@@ -73,6 +79,13 @@ function handleAccess() {
         localStorage.setItem('authenticated', 'true');
         showMainSection();
         errorMessage.style.display = 'none';
+    } else if (enteredPassword === ADMIN_PASSWORD) {
+        isAuthenticated = true;
+        isAdmin = true;
+        localStorage.setItem('authenticated', 'true');
+        localStorage.setItem('isAdmin', 'true');
+        showMainSection();
+        errorMessage.style.display = 'none';
     } else {
         errorMessage.textContent = 'Incorrect password. Please try again.';
         errorMessage.style.display = 'block';
@@ -85,6 +98,7 @@ function handleLogout() {
     isAuthenticated = false;
     isAdmin = false;
     localStorage.removeItem('authenticated');
+    localStorage.removeItem('isAdmin');
     showWelcomeSection();
     accessPasswordInput.value = '';
 }
@@ -123,27 +137,11 @@ function switchTab(tabName) {
 }
 
 function checkAdminAccess() {
-    // Only ask for admin password if not already admin
-    if (!isAdmin) {
-        const adminPassword = prompt('Enter admin password to access upload features (or click Cancel to continue as viewer):');
-        
-        if (adminPassword === ADMIN_PASSWORD) {
-            isAdmin = true;
-            uploadSection.style.display = 'block';
-            alert('Admin access granted! You can now upload and delete questions.');
-        } else if (adminPassword !== null) {
-            // User entered wrong password
-            alert('Incorrect admin password. You can view questions but cannot upload or delete.');
-            isAdmin = false;
-            uploadSection.style.display = 'none';
-        } else {
-            // User clicked cancel
-            isAdmin = false;
-            uploadSection.style.display = 'none';
-        }
-    } else {
-        // Already admin, show upload section
+    // Show or hide upload section based on admin status
+    if (isAdmin) {
         uploadSection.style.display = 'block';
+    } else {
+        uploadSection.style.display = 'none';
     }
 }
 
@@ -168,36 +166,43 @@ async function handleUpload() {
         uploadBtn.textContent = 'Uploading...';
         uploadBtn.disabled = true;
 
-        // Create file URL (for demo purposes, we'll use object URL)
-        const fileUrl = URL.createObjectURL(file);
+        // Convert file to base64 for proper storage
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const fileUrl = e.target.result;
 
-        // Create new question object
-        const newQuestion = {
-            id: Date.now(), // Simple ID generation
-            title: courseCode,
-            description: description || 'No course name',
-            file_url: fileUrl,
-            file_name: file.name,
-            created_at: new Date().toISOString()
+            // Create new question object
+            const newQuestion = {
+                id: Date.now(), // Simple ID generation
+                title: courseCode,
+                description: description || 'No course name',
+                file_url: fileUrl,
+                file_name: file.name,
+                created_at: new Date().toISOString()
+            };
+
+            // Add to questions array
+            questions.unshift(newQuestion);
+
+            // Save to localStorage for persistence
+            localStorage.setItem('questions', JSON.stringify(questions));
+
+            // Clear form
+            questionDescriptionInput.value = '';
+            questionCodeInput.value = '';
+            questionFileInput.value = '';
+
+            alert('Past question uploaded successfully!');
+            loadQuestions();
+
+            uploadBtn.textContent = 'Upload Past Question';
+            uploadBtn.disabled = false;
         };
+        
+        reader.readAsDataURL(file);
 
-        // Add to questions array
-        questions.unshift(newQuestion);
-
-        // Save to localStorage for persistence
-        localStorage.setItem('questions', JSON.stringify(questions));
-
-        // Clear form
-        questionDescriptionInput.value = '';
-        questionCodeInput.value = '';
-        questionFileInput.value = '';
-
-        alert('Past question uploaded successfully!');
-        loadQuestions();
-
-    } catch (error) {
+        } catch (error) {
         alert('Error uploading question: ' + error.message);
-    } finally {
         uploadBtn.textContent = 'Upload Past Question';
         uploadBtn.disabled = false;
     }
@@ -209,25 +214,8 @@ function loadDemoQuestions() {
     if (savedQuestions) {
         questions = JSON.parse(savedQuestions);
     } else {
-        // Initialize with some demo questions
-        questions = [
-            {
-                id: 1,
-                title: 'CS101',
-                description: 'Introduction to Computer Science',
-                file_url: 'data:text/plain;base64,VGhpcyBpcyBhIGRlbW8gZmlsZQ==',
-                file_name: 'cs101_past_question.pdf',
-                created_at: '2024-01-15T10:00:00Z'
-            },
-            {
-                id: 2,
-                title: 'MATH201',
-                description: 'Calculus II',
-                file_url: 'data:text/plain;base64,VGhpcyBpcyBhbm90aGVyIGRlbW8gZmlsZQ==',
-                file_name: 'math201_exam.pdf',
-                created_at: '2024-01-10T14:30:00Z'
-            }
-        ];
+        // Initialize with empty questions array
+        questions = [];
         localStorage.setItem('questions', JSON.stringify(questions));
     }
 }
